@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2017",
+    "sourceMap": true
+  },
+  "extends": "@tsconfig/node16/tsconfig.json",
+  "exclude": [
+    "node_modules"
+  ]
+}

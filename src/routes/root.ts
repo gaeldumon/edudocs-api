@@ -3,50 +3,31 @@ import got from "got";
 import {apiHeaders} from "../globals/headers";
 import {ISendDocumentBody} from "../interfaces/ISendDocumentBody";
 import {ISignatory} from "../interfaces/ISignatory";
-import {readFile} from "fs/promises";
+import {writeFile} from "fs/promises";
 
 const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
-    async function getStudentIdByEmail(email: string): Promise<string> {
-        const url = `https://ext.edusign.fr/v1/student/by-email/${email}`
-        const {result} = await got(url, {headers: apiHeaders}).json()
-        return result.id
-    }
-
-    async function getExternalIdsByEmails(emails: string[]): Promise<string[]> {
-        let ids = []
-        for (const email of emails) {
-            const url = `https://ext.edusign.fr/v1/externals/by-email/${email}`
-            const {result} = await got(url, {headers: apiHeaders}).json()
-            ids.push(result.ID)
-        }
-        return ids
-    }
-
     fastify.get('/', async function (request, reply) {
         return "Welcome to the EduDocs API"
+    })
+
+    fastify.post('/upload-document', async function (request, reply) {
+        const data = await request.file()
+        return await writeFile(`upload/documents/${data.filename}`, data.file)
     })
 
     fastify.post('/send-document', async function (request, reply) {
         // @ts-ignore
         const body: ISendDocumentBody = request.body
 
-        // TODO : rework this path access
-        // Get file buffer from file name
-        const bitmap = await readFile(`upload/documents/${body.filename}`)
-
-        // Saving the Base64 value of the file
-        const fileBase64 = bitmap.toString("base64")
-
-        // If using a file buffer directly sent by front
-        //const fileBase64: string = body.file.toString('base64')
-
-        const studentId: string = await getStudentIdByEmail(body.studentEmail)
-        const externalIds: string[] = await getExternalIdsByEmails(body.externalEmails)
+        const filename: string = body.filename
+        const fileBase64: string = await this.getBase64(filename)
+        const studentId: string = await this.getStudentIdByEmail(body.studentEmail)
+        const externalIds: string[] = await this.getExternalIdsByEmails(body.externalEmails)
 
         const signatories: ISignatory[] = []
 
-        // Just an empty document's element
+        // Just an empty document's element for convenience
         const defaultElement = {type: "", position: {page: "", x: "", y: ""}}
 
         // Pushing the only student first
@@ -59,7 +40,7 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
         const payload = {
             user_id: process.env.EDUSIGN_USER_ID,
-            document: {name: body.filename, base64: fileBase64},
+            document: {name: filename, base64: fileBase64},
             sendDocumentToRecipients: true,
             signatories,
             validateSignatureBy: "email",

@@ -6,18 +6,28 @@ import {ISignatory} from "../interfaces/ISignatory";
 
 const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
+    /**
+     * Welcome route.
+     */
     fastify.get('/', async function (request, reply) {
         return "Welcome to the EduDocs API"
     })
 
+    /**
+     * Can perform various checks on the document (extension, quality...).
+     */
     fastify.post('/verify-document', async function (request, reply) {
         const fileData = await request.file()
         if (!this.isPdf(fileData.filename)) {
-            return { status: "error", message: "only pdf files are allowed" }
+            reply.statusCode = 500
+            return {status: "error", message: "only pdf files are allowed"}
         }
-        return { status: "accepted" }
+        return {status: "accepted"}
     })
 
+    /**
+     * Effectively send the document to the recipients with the Edusign Base64 document sender endpoint.
+     */
     fastify.post('/send-document', async function (request, reply) {
         // @ts-ignore
         const body: ISendDocumentRequestBody = request.body

@@ -1,20 +1,26 @@
 import fp from 'fastify-plugin'
-import {readFile} from "fs/promises";
+import {PathLike} from 'fs';
+import {FileHandle, readFile} from "fs/promises";
+import * as path from "path";
 
 export interface FilePluginOptions {
     // Specify File plugin options here
 }
 
 /**
- * Utilities to perform actions on files in upload/documents.
+ * Utilities to perform actions on files.
  */
 export default fp<FilePluginOptions>(async (fastify, opts) => {
 
-    fastify.decorate('getBase64', async function (fileName: string) {
-        // Get file buffer from file name
-        const bitmap = await readFile(`upload/documents/${fileName}`)
+    fastify.decorate('getBase64', async function (file: PathLike | FileHandle) {
+        // Get file buffer from file
+        const bitmap = await readFile(file)
         // Returning the Base64 value of the file
         return bitmap.toString("base64")
+    })
+
+    fastify.decorate('isPdf', async function (filename: string) {
+        return path.extname(filename) === ".pdf"
     })
 })
 
@@ -22,9 +28,15 @@ export default fp<FilePluginOptions>(async (fastify, opts) => {
 declare module 'fastify' {
     export interface FastifyInstance {
         /**
-         * Get the Base64 value of a file in /upload/documents.
-         * @param fileName
+         * Get the Base64 value of a file data.
+         * @param file
          */
-        getBase64(fileName: string): Promise<string>;
+        getBase64(file: PathLike | FileHandle): Promise<string>;
+
+        /**
+         * Returns true if the file extension is pdf, false otherwise.
+         * @param filename
+         */
+        isPdf(filename: string): boolean
     }
 }

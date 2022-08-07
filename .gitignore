@@ -65,5 +65,3 @@ test/types/index.js
 dist
 
 .env
-
-upload/documents

@@ -3,8 +3,6 @@ import got from "got";
 import {apiHeaders} from "../globals/headers";
 import {ISendDocumentRequestBody} from "../interfaces/ISendDocumentRequestBody";
 import {ISignatory} from "../interfaces/ISignatory";
-import {writeFile} from "fs/promises";
-import {extname} from "path"
 
 const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
@@ -12,23 +10,22 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         return "Welcome to the EduDocs API"
     })
 
-    fastify.post('/upload-document', async function (request, reply) {
-        const data = await request.file()
-        const fileExtension = extname(data.filename)
-        if (fileExtension !== ".pdf") {
-            return new Error(`pdf file extension required, given: ${fileExtension}`)
+    fastify.post('/verify-document', async function (request, reply) {
+        const fileData = await request.file()
+        if (!this.isPdf(fileData.filename)) {
+            return { status: "error", message: "only pdf files are allowed" }
         }
-        return await writeFile(`upload/documents/${data.filename}`, data.file)
+        return { status: "accepted" }
     })
 
     fastify.post('/send-document', async function (request, reply) {
         // @ts-ignore
         const body: ISendDocumentRequestBody = request.body
 
-        const filename: string = body.filename
-        const fileBase64: string = await this.getBase64(filename)
-        const studentId: string = await this.getStudentIdByEmail(body.studentEmail)
-        const externalIds: string[] = await this.getExternalIdsByEmails(body.externalEmails)
+        const fileBase64 = body.fileBase64
+        const filename = body.filename
+        const studentId = await this.getStudentIdByEmail(body.studentEmail)
+        const externalIds = await this.getExternalIdsByEmails(body.externalEmails)
 
         const signatories: ISignatory[] = []
 

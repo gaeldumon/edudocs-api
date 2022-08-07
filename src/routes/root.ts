@@ -1,7 +1,7 @@
 import {FastifyPluginAsync} from 'fastify'
 import got from "got";
 import {apiHeaders} from "../globals/headers";
-import {ISendDocumentBody} from "../interfaces/ISendDocumentBody";
+import {ISendDocumentRequestBody} from "../interfaces/ISendDocumentRequestBody";
 import {ISignatory} from "../interfaces/ISignatory";
 import {writeFile} from "fs/promises";
 
@@ -18,7 +18,7 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
     fastify.post('/send-document', async function (request, reply) {
         // @ts-ignore
-        const body: ISendDocumentBody = request.body
+        const body: ISendDocumentRequestBody = request.body
 
         const filename: string = body.filename
         const fileBase64: string = await this.getBase64(filename)

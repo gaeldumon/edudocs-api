@@ -1,4 +1,4 @@
-export interface ISendDocumentBody {
+export interface ISendDocumentRequestBody {
     filename: string,
     studentEmail: string,
     externalEmails: string[]

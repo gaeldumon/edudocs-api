@@ -39,15 +39,15 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
         const signatories: ISignatory[] = []
 
-        // Just an empty document's element for convenience
-        const defaultElement = {type: "", position: {page: "", x: "", y: ""}}
+        // Default document's signature element
+        const defaultSignatureElement = {type: "", position: {page: "1", x: "200", y: "200"}}
 
         // Pushing the only student first
-        signatories.push({type: "student", id: studentId, elements: [defaultElement]})
+        signatories.push({type: "student", id: studentId, elements: [defaultSignatureElement]})
 
         // Pushing the externals
         for (const externalId of externalIds) {
-            signatories.push({type: "external", id: externalId, elements: [defaultElement]})
+            signatories.push({type: "external", id: externalId, elements: [defaultSignatureElement]})
         }
 
         const payload = {

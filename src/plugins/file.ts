@@ -5,7 +5,9 @@ export interface FilePluginOptions {
     // Specify File plugin options here
 }
 
-// The use of fastify-plugin is required to be able to export the decorators to the outer scope
+/**
+ * Utilities to perform actions on files in upload/documents.
+ */
 export default fp<FilePluginOptions>(async (fastify, opts) => {
 
     fastify.decorate('getBase64', async function (fileName: string) {
@@ -19,6 +21,10 @@ export default fp<FilePluginOptions>(async (fastify, opts) => {
 // When using .decorate you have to specify added properties for Typescript
 declare module 'fastify' {
     export interface FastifyInstance {
+        /**
+         * Get the Base64 value of a file in /upload/documents.
+         * @param fileName
+         */
         getBase64(fileName: string): Promise<string>;
     }
 }

@@ -6,7 +6,9 @@ export interface EdusignPluginOptions {
     // Specify Edusign plugin options here
 }
 
-// The use of fastify-plugin is required to be able to export the decorators to the outer scope
+/**
+ * Wrappers to fetch the Edusign endpoints in search of ressources fields to help with other requests.
+ */
 export default fp<EdusignPluginOptions>(async (fastify, opts) => {
 
     fastify.decorate('getStudentIdByEmail', async function (email: string) {
@@ -29,8 +31,16 @@ export default fp<EdusignPluginOptions>(async (fastify, opts) => {
 // When using .decorate you have to specify added properties for Typescript
 declare module 'fastify' {
     export interface FastifyInstance {
+        /**
+         * Returns a student id based on its email.
+         * Fetched edusign endpoint: https://ext.edusign.fr/v1/student/by-email/:email
+         */
         getStudentIdByEmail(email: string): Promise<string>,
 
+        /**
+         * Returns an array of externals (teacher, speaker...) ids based on an array of externals emails.
+         * Fetched edusign endpoint: https://ext.edusign.fr/v1/externals/by-email/:email
+         */
         getExternalIdsByEmails(emails: string[]): Promise<string[]>
     }
 }

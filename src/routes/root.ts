@@ -4,6 +4,7 @@ import {apiHeaders} from "../globals/headers";
 import {ISendDocumentRequestBody} from "../interfaces/ISendDocumentRequestBody";
 import {ISignatory} from "../interfaces/ISignatory";
 import {writeFile} from "fs/promises";
+import {extname} from "path"
 
 const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
@@ -13,6 +14,10 @@ const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
     fastify.post('/upload-document', async function (request, reply) {
         const data = await request.file()
+        const fileExtension = extname(data.filename)
+        if (fileExtension !== ".pdf") {
+            return new Error(`pdf file extension required, given: ${fileExtension}`)
+        }
         return await writeFile(`upload/documents/${data.filename}`, data.file)
     })
 
